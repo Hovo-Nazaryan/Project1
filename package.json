@@ -1,0 +1,6 @@
+{
+  "bin": "main.go",
+  "name": "project1",
+  "version": "1.0.0",
+  "license": "UNLICENCED"
+}
