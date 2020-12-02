@@ -1,13 +1,13 @@
 import logo from './logo.svg';
 import './App.css';
 import ToDo from './ToDo'
-import Tasks from './Tasks'
 import Blocks from './blocks/Blocks'
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   return (
-      // <ToDo /> 
-      <Blocks/>
+      <ToDo /> 
+      // <Blocks/>
   );
   
 }

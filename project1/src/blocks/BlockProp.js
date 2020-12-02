@@ -1,12 +1,12 @@
-import React from 'react'
-import './blocks.css'
+// import React from 'react'
+// import './blocks.css'
 
-function BlockProp(props){
-    return(
-        <div className = 'block'>
-            {props.data}
-        </div>
-    )
-}
+// function BlockProp(props){
+//     return(
+//         <div className = 'block'>
+//             {props.data}
+//         </div>
+//     )
+// }
 
-export default BlockProp
+// export default BlockProp
