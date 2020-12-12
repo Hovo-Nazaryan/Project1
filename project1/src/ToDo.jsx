@@ -1,98 +1,150 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import Tasks from './Tasks'
-import { Container, Row, Col } from 'react-bootstrap';
-import { InputGroup, FormControl, Button, Card } from 'react-bootstrap'
+import { Container, Row, Col, Button } from 'react-bootstrap';
+import AddTask from './addTasks';
 import './ToDo.css'
-import {faTrash } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import idGen from './idGen';
+import Confirm from "./confirmModals"
+import EditModal from './editModal'
+import { faLessThan } from '@fortawesome/free-solid-svg-icons';
 
-class ToDo extends Component {
+class ToDo extends PureComponent {
     state = {
+        editTask: null,
         tasks: [],
-        inputValue: '',
+        selectedTasks: new Set(),
+        toggle: false,
+        
     }
 
+    handleCheck = (taskId) => {
+        console.log(taskId)
+        const selectedTasks = new Set(this.state.selectedTasks);
+        if (selectedTasks.has(taskId)) {
+            selectedTasks.delete(taskId)
 
-    handleChange = (event) => {
-        this.setState({
-            inputValue: event.target.value
-        })
-    }
+        } else {
 
-    addTask = () => {
-        const { inputValue } = this.state;
-        if(!inputValue){
-            return
+            selectedTasks.add(taskId)
         }
+        this.setState({
+            selectedTasks
+        })
+        console.log(selectedTasks)
+    }
+
+    addTask = (value) => {
+
         const newTask = {
-            text: inputValue,
-            _id: idGen() 
+            text: value,
+            _id: idGen()
         }
         const tasksArray = [newTask, ...this.state.tasks]
-        
+
 
         this.setState({
             tasks: tasksArray,
-            inputValue: '',
         })
     }
 
-    handleKeyDown = (event) => {
-        if (event.key === 'Enter'){
-            this.addTask()
-        }
-    }
     handleDelete = (taskId) => {
         const newTasks = this.state.tasks.filter(task => task._id !== taskId);
+        console.log(taskId)
         this.setState({
             tasks: newTasks
         });
     }
 
+    toggleConfirm = () => {
+        this.setState({
+            toggle: !this.state.toggle
+        })
+    }
+    
+    toggleEditModal = (task) => {
+        this.setState ({
+            editTask: task
+        })
+
+    }
+
+    saveTask = (editedTasks) => {
+        const tasks = [...this.state.tasks]
+        const foundTaskId = tasks.findIndex((task) => task._id === editedTasks._id)
+        tasks[foundTaskId] = editedTasks
+
+        this.setState ({
+            tasks: tasks,
+            editTask: null,
+        })
+    }
+    
+
+    removeSelected = () => {
+        let tasks = [...this.state.tasks]
+
+        this.state.selectedTasks.forEach((id) => {
+            tasks = tasks.filter((task) => task._id !== id)
+
+        })
+        this.setState({
+            tasks,
+            selectedTasks: new Set(),
+            toggle: false
+        })
+    }
+
     render() {
-        const { inputValue} = this.state;
-        const tasksArray = this.state.tasks.map((task, i)=>{
-            return(
-                <Col key = {i} xs={12} sm={6} md={4} lg={3} xl={2} className ="mb-3">
-                <Card className ='task'>
-                    <Card.Body>
-                        <Card.Title>{task.text.slice(0, 10)+'...'}</Card.Title>
-                        <Card.Text>
-                            {task.text}
-                        </Card.Text>
-                        <Button variant="danger" onClick = {() => this.handleDelete(task._id)}>
-                            <FontAwesomeIcon icon = {faTrash}/>
-                        </Button>
-                    </Card.Body>
-                </Card>
+        const { tasks, toggle, selectedTasks, editTask } = this.state;
+        const tasksArray = tasks.map((task) => {
+            return (
+                <Col className="colCard" key={task._id} xs={12} sm={6} md={4} lg={3} xl={2}>
+                    <Tasks
+                        data={task}
+                        onRemove={this.handleDelete}
+                        onCheck={this.handleCheck}
+                        disabled={!!selectedTasks.size}
+                        onEdit = {() => this.toggleEditModal(task)}
+                    />
                 </Col>
             )
         })
         return (
             <div className='ToDo'>
                 <Container>
-                    <Row className = 'justify-content-center'>
+                    <Row className='justify-content-center'>
                         <Col sm={6} xl={6} lg={4} md={6}>
-                            <InputGroup className= 'justify-content-center'>
-                                <FormControl
-                                    placeholder="Add new task"
-                                    onChange={this.handleChange}
-                                    value={inputValue}
-                                    onKeyDown = {(event) => this.handleKeyDown(event)} />
-                                <InputGroup.Append>
-                                    <Button variant="outline-success" 
-                                        onClick={this.addTask}
-                                        disabled = {!inputValue}>Add Task
-                                        </Button>
-                                </InputGroup.Append> 
-                            </InputGroup> 
-                        </Col>     
+                            <AddTask
+                                onAdd={this.addTask}
+                                disabled={!!selectedTasks.size}
+                            />
+                        </Col>
                     </Row>
                 </Container>
-                <Row className = "mb-3">
+                <Row className="mb-3">
                     {tasksArray}
                 </Row>
+                <Button variant="outline-danger"
+                    onClick={this.removeSelected}
+                    onClick={this.toggleConfirm}
+                    disabled={selectedTasks.size === 0 ? true : false}
+                >
+                    Remove Selected
+                </Button>
+                {toggle &&
+                    <Confirm
+                        onSubmit={this.removeSelected}
+                        onClose={this.toggleConfirm}
+                        count={selectedTasks.size}
+                    />
+                }
+                {!!editTask &&
+                    <EditModal
+                        data = {editTask}
+                        onSave = {this.saveTask}
+                        onClose = {() => this.toggleEditModal(null)}
+                    />
+                }
             </div>
         )
     }

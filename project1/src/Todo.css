@@ -1,3 +1,17 @@
 .ToDo{
     margin: 15px;
 }
+.task{
+    text-align: center;
+    text-decoration: none; 
+}
+.task1{
+    text-align: center;
+    border: 1px solid red !important;
+}
+.colCard{
+    margin-top:15px;
+}
+.input{
+    width: 100% !important; 
+}
