@@ -12,10 +12,10 @@ export default function Confirm(props) {
           <Modal.Title>Are you sure, remove {props.count} tasks</Modal.Title>
         </Modal.Header>
         <Modal.Footer>
-          <Button variant="primary" onClick={props.onSubmit}>
+          <Button variant="danger" onClick={props.onSubmit}>
             Submit
               </Button>
-          <Button variant="danger" onClick={props.onClose}>
+          <Button variant="primary" onClick={props.onClose}>
             Cancel
               </Button>
         </Modal.Footer>

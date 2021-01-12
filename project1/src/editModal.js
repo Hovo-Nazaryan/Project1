@@ -14,20 +14,20 @@ export default class EditModal extends React.Component {
     }
     handleChange = (event) => {
         this.setState({
-            text: event.target.value,
+            title: event.target.value,
         })
     }
 
     handlSave = () => {
-        const {text} = this.state;
+        const {title} = this.state;
 
-        if(!text){
+        if(!title){
             return
         }
         this.props.onSave(this.state)
     }
     render() {
-        const {text} = this.state
+        const {title} = this.state
         const { props } = this;
         return (
             <>
@@ -38,7 +38,7 @@ export default class EditModal extends React.Component {
                     <Modal.Body>
                         <input type='text' 
                         className = 'input'
-                        value = {text}
+                        value = {title}
                         onChange = {this.handleChange}/>
                     </Modal.Body>
                     <Modal.Footer>

@@ -3,10 +3,8 @@ import Tasks from './Tasks'
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import AddTask from './addTasks';
 import './ToDo.css'
-import idGen from './idGen';
 import Confirm from "./confirmModals"
 import EditModal from './editModal'
-import { faLessThan } from '@fortawesome/free-solid-svg-icons';
 
 class ToDo extends PureComponent {
     state = {
@@ -14,11 +12,31 @@ class ToDo extends PureComponent {
         tasks: [],
         selectedTasks: new Set(),
         toggle: false,
-        
+
+    }
+
+    componentDidMount() {
+        fetch("http://localhost:3001/task", {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json"
+            },
+        })
+            .then((res) => res.json())
+            .then((response) => {
+                if (response.error) {
+                    throw response.error
+                }
+                this.setState({
+                    tasks: response.reverse()
+                })
+            })
+            .catch((error) => {
+                console.log(error)
+            })
     }
 
     handleCheck = (taskId) => {
-        console.log(taskId)
         const selectedTasks = new Set(this.state.selectedTasks);
         if (selectedTasks.has(taskId)) {
             selectedTasks.delete(taskId)
@@ -30,29 +48,53 @@ class ToDo extends PureComponent {
         this.setState({
             selectedTasks
         })
-        console.log(selectedTasks)
     }
 
-    addTask = (value) => {
-
-        const newTask = {
-            text: value,
-            _id: idGen()
-        }
-        const tasksArray = [newTask, ...this.state.tasks]
-
-
-        this.setState({
-            tasks: tasksArray,
+    addTask = (data) => {
+        const body = JSON.stringify(data)
+        fetch("http://localhost:3001/task", {
+            method: "POST",
+            headers: {
+                "Content-type": "application/json"
+            },
+            body
         })
+            .then((res) => res.json())
+            .then((response) => {
+                if (response.error) {
+                    throw response.error
+                }
+                const tasks = [response, ...this.state.tasks]
+
+                this.setState({
+                    tasks: tasks
+                })
+            })
+            .catch((error) => {
+                console.log(error)
+            })
     }
 
     handleDelete = (taskId) => {
-        const newTasks = this.state.tasks.filter(task => task._id !== taskId);
-        console.log(taskId)
-        this.setState({
-            tasks: newTasks
-        });
+        fetch(`http://localhost:3001/task/${taskId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-type": "application/json"
+            },
+        })
+            .then((res) => res.json())
+            .then((response) => {
+                if (response.error) {
+                    throw response.error
+                }
+                const newTasks = this.state.tasks.filter(task => task._id !== taskId);
+                this.setState({
+                    tasks: newTasks
+                })
+            })
+            .catch((error) => {
+                console.log(error)
+            })
     }
 
     toggleConfirm = () => {
@@ -60,38 +102,72 @@ class ToDo extends PureComponent {
             toggle: !this.state.toggle
         })
     }
-    
+
     toggleEditModal = (task) => {
-        this.setState ({
+        this.setState({
             editTask: task
         })
 
     }
 
     saveTask = (editedTasks) => {
-        const tasks = [...this.state.tasks]
-        const foundTaskId = tasks.findIndex((task) => task._id === editedTasks._id)
-        tasks[foundTaskId] = editedTasks
-
-        this.setState ({
-            tasks: tasks,
-            editTask: null,
+        fetch(`http://localhost:3001/task/${editedTasks._id}`, {
+            method: "PUT",
+            headers: {
+                "Content-type": "application/json"
+            },
+            body: JSON.stringify(editedTasks)
         })
+            .then((res) => res.json())
+            .then((response) => {
+                if (response.error) {
+                    throw response.error
+                }
+                const tasks = [...this.state.tasks]
+                const foundTaskId = tasks.findIndex((task) => task._id === editedTasks._id)
+                tasks[foundTaskId] = editedTasks
+
+                this.setState({
+                    tasks: tasks,
+                    editTask: null,
+                })
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+
     }
-    
+
 
     removeSelected = () => {
-        let tasks = [...this.state.tasks]
-
-        this.state.selectedTasks.forEach((id) => {
-            tasks = tasks.filter((task) => task._id !== id)
-
+        let taskIds = {tasks: [...this.state.selectedTasks]}
+        fetch(`http://localhost:3001/task`, {
+            method: "PATCH",
+            headers: {
+                "Content-type": "application/json"
+            },
+            body: JSON.stringify(taskIds)
         })
-        this.setState({
-            tasks,
-            selectedTasks: new Set(),
-            toggle: false
-        })
+            .then((res) => res.json())
+            .then((response) => {
+                if (response.error) {
+                    throw response.error
+                }
+                let tasks = [...this.state.tasks]
+
+                this.state.selectedTasks.forEach((id) => {
+                    tasks = tasks.filter((task) => task._id !== id)
+
+                })
+                this.setState({
+                    tasks,
+                    selectedTasks: new Set(),
+                    toggle: false
+                })
+            })
+            .catch((error) => {
+                console.log(error)
+            })
     }
 
     render() {
@@ -104,7 +180,7 @@ class ToDo extends PureComponent {
                         onRemove={this.handleDelete}
                         onCheck={this.handleCheck}
                         disabled={!!selectedTasks.size}
-                        onEdit = {() => this.toggleEditModal(task)}
+                        onEdit={() => this.toggleEditModal(task)}
                     />
                 </Col>
             )
@@ -140,9 +216,9 @@ class ToDo extends PureComponent {
                 }
                 {!!editTask &&
                     <EditModal
-                        data = {editTask}
-                        onSave = {this.saveTask}
-                        onClose = {() => this.toggleEditModal(null)}
+                        data={editTask}
+                        onSave={this.saveTask}
+                        onClose={() => this.toggleEditModal(null)}
                     />
                 }
             </div>
