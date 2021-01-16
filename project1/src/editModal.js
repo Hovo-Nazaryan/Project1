@@ -1,56 +1,90 @@
+import { faCaretSquareDown } from '@fortawesome/free-solid-svg-icons';
 import React, { Component } from 'react';
-import { Button, Modal } from 'react-bootstrap'
+import { Button, Modal, FormControl } from 'react-bootstrap';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import "./ToDo.css"
+import {formatDate} from './utils'
 
 
 
 export default class EditModal extends React.Component {
-    constructor(props){
-        super (props)
-
-        this.state ={
-            ...props.data
+    constructor(props) {
+        super(props)
+        const {date} = props.data
+        this.state = {
+            ...props.data,
+            date: date ? new Date(date) : new Date ()
         }
     }
     handleChange = (event) => {
+        const {name, value} = event.target
+
         this.setState({
-            title: event.target.value,
+            [name]: value,
         })
     }
 
     handlSave = () => {
-        const {title} = this.state;
+        const { title, date } = this.state;
 
-        if(!title){
+        if (!title) {
             return
         }
-        this.props.onSave(this.state)
+        this.props.onSave({...this.state, date: formatDate(date.toISOString())})
     }
+    handleDateChange = (date) =>{
+        this.setState({
+            date
+        })
+    }
+
     render() {
-        const {title} = this.state
+        const { title, description, date } = this.state
         const { props } = this;
         return (
-            <>
-                <Modal show={true} onHide={props.onClose} animation={false}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Are you sure, edit task</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <input type='text' 
-                        className = 'input'
+            <Modal
+                show={true}
+                onHide={props.onClose}
+                animation={false}
+                centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Are you Sure, edit the Task</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <FormControl
+                        name = 'title'
                         value = {title}
-                        onChange = {this.handleChange}/>
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="primary" onClick={this.handlSave}>
-                            Save
-                        </Button>
-                        <Button variant="danger" onClick={props.onClose}>
-                            Cancel
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-            </>
+                        aria-describedby="basic-addon1"
+                        onChange={this.handleChange}
+                        // disabled={disabled}
+                    />
+                    <textarea 
+                        name = 'description'
+                        value = {description}
+                        rows="5" 
+                        className='textarea'
+                        onChange={this.handleChange}
+                    />
+                    <DatePicker
+                        selected={date}
+                        onChange={this.handleDateChange}
+                    />
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="outline-primary"
+                        onClick={this.handlSave}
+                        disabled={!title}
+                    >
+                        Save
+                </Button>
+                    <Button variant="outline-danger"
+                        onClick={props.onClose}
+                    >
+                        Cancel
+                </Button>
+                </Modal.Footer>
+            </Modal>
         );
     }
 }

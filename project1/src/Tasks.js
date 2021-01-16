@@ -3,6 +3,7 @@ import {Button, Card } from 'react-bootstrap'
 import {faTrash, faEdit } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import './ToDo.css'
+import {formatDate} from './utils'
 
 class Tasks extends Component{
     state = {
@@ -31,7 +32,13 @@ class Tasks extends Component{
                     />
                     <Card.Title>{task.title}</Card.Title>
                     <Card.Text>
-                        {task.text}
+                        Description: {task.description}
+                    </Card.Text>
+                    <Card.Text>
+                        Date: {formatDate(task.date)}
+                    </Card.Text>
+                    <Card.Text>
+                        Created At: {formatDate(task.created_at)}
                     </Card.Text>
                     <Button 
                     variant="danger" 
